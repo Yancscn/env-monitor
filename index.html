@@ -518,29 +518,44 @@ async function fetchData() {
 
 function parseData(json) {
   try {
-    const props = json.data || json;
-    const get = (key) => {
-      if (props[key] === undefined || props[key] === null) return null;
-      if (typeof props[key] === 'object' && props[key].value !== undefined) return props[key].value;
-      return props[key];
-    };
-    const temp  = parseFloat(get('temp')  ?? get('temperature'));
-    const humi  = parseFloat(get('humi')  ?? get('humidity'));
+    // API 返回的 data 是数组，转换成 {identifier: value} 的对象
+    const arr = json.data;
+    if (!Array.isArray(arr)) { addLog('数据格式异常', 'err'); return; }
+
+    const props = {};
+    arr.forEach(item => {
+      if (item.identifier && item.value !== undefined) {
+        props[item.identifier] = item.value;
+      }
+    });
+
+    // 调试用，确认解析正确后可删除
+    console.log('解析后属性:', props);
+
+    const get = (key) => (props[key] !== undefined ? props[key] : null);
+
+    const temp  = parseFloat(get('temp'));
+    const humi  = parseFloat(get('humi'));
     const smoke = parseFloat(get('smoke'));
     const fan   = parseInt(get('fan_status'));
-    const led   = parseInt(get('led_status'));
     const alarm = parseInt(get('alarm_status'));
+
     if (!isNaN(temp))  updateSensor('temp',  temp);
     if (!isNaN(humi))  updateSensor('humi',  humi);
     if (!isNaN(smoke)) updateSensor('smoke', smoke);
     if (!isNaN(fan))   updateDeviceCard('fan', fan === 1, false);
-    if (!isNaN(led))   updateDeviceCard('led', led === 1, true);
-    if (!isNaN(alarm)) updateAlarm(alarm === 1);
+    if (!isNaN(alarm)) {
+      updateDeviceCard('led', alarm === 1, true);
+      updateAlarm(alarm === 1);
+    }
     if (!isNaN(temp) && !isNaN(humi) && !isNaN(smoke)) {
       pushChart(temp, humi, smoke);
-      document.getElementById('lastUpdate').textContent = '最后更新：' + new Date().toLocaleTimeString();
+      document.getElementById('lastUpdate').textContent =
+        '最后更新：' + new Date().toLocaleTimeString();
     }
-  } catch(e) { addLog('数据解析错误: ' + e.message, 'err'); }
+  } catch(e) {
+    addLog('数据解析错误: ' + e.message, 'err');
+  }
 }
 
 function demoMode() {
