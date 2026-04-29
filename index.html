@@ -4,17 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>智能环境监控</title>
-
-  <!-- ===== PWA 支持 ===== -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4f8ef7" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ENV监控" />
-  <!-- iOS 图标 -->
   <link rel="apple-touch-icon" href="icon-192.png" />
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root {
@@ -25,25 +21,20 @@
     }
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding-bottom:80px;}
-
     .header{background:linear-gradient(135deg,#1a1d27,#22263a);padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
     .header-title{font-size:18px;font-weight:700;}
     .header-sub{font-size:12px;color:var(--sub);margin-top:2px;}
     .status-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
     .status-dot.offline{background:var(--red);box-shadow:0 0 8px var(--red);animation:none;}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-
     .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;}
     .nav-item{flex:1;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--sub);font-size:11px;border:none;background:none;transition:color .2s;}
     .nav-item.active{color:var(--accent);}
     .nav-icon{font-size:22px;}
-
     .page{display:none;padding:16px;}
     .page.active{display:block;}
-
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
     .card-title{font-size:13px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
-
     .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
     .sensor-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 14px;position:relative;overflow:hidden;transition:border-color .3s;}
     .sensor-card.alert{border-color:var(--red);}
@@ -59,7 +50,6 @@
     .sensor-status.ok{color:var(--green);}
     .sensor-status.warn{color:var(--yellow);}
     .sensor-status.danger{color:var(--red);}
-
     .device-row{display:flex;gap:12px;margin-bottom:14px;}
     .device-status-card{flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .3s,background .3s;}
     .device-status-card.ds-on{border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.05);}
@@ -73,10 +63,8 @@
     .ds-state.off{color:var(--sub);}
     .ds-state.alarm{color:var(--red);}
     .ds-auto-tag{font-size:10px;color:var(--sub);background:var(--card2);border-radius:6px;padding:2px 6px;}
-
     .chart-wrap{position:relative;height:200px;}
     .last-update{font-size:11px;color:var(--sub);text-align:center;margin-bottom:10px;}
-
     .thr-item{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:10px;}
     .thr-item:last-child{border-bottom:none;}
     .thr-icon{font-size:18px;width:28px;text-align:center;}
@@ -89,7 +77,6 @@
     .thr-unit{font-size:11px;color:var(--sub);min-width:16px;}
     .btn-send{padding:7px 12px;background:var(--accent);border:none;border-radius:10px;color:white;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .2s;white-space:nowrap;}
     .btn-send:active{opacity:.7;}
-
     .config-item{padding:14px 0;border-bottom:1px solid var(--border);}
     .config-item:last-child{border-bottom:none;}
     .config-label{font-size:13px;color:var(--sub);margin-bottom:6px;}
@@ -97,7 +84,6 @@
     .config-input:focus{border-color:var(--accent);}
     .btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius);color:white;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .2s;}
     .btn-primary:active{opacity:.8;}
-
     .log-list{max-height:240px;overflow-y:auto;}
     .log-item{padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;display:flex;gap:8px;}
     .log-time{color:var(--sub);white-space:nowrap;}
@@ -105,20 +91,15 @@
     .log-msg.warn{color:var(--yellow);}
     .log-msg.err{color:var(--red);}
     .log-msg.ok{color:var(--green);}
-
     .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;border:1px solid var(--border);border-radius:12px;padding:10px 20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     .toast.success{border-color:var(--green);color:var(--green);}
     .toast.error{border-color:var(--red);color:var(--red);}
     .toast.warn{border-color:var(--yellow);color:var(--yellow);}
-
     .refresh-btn{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:6px 12px;color:var(--sub);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;}
     .refresh-btn.spinning span{animation:spin .8s linear infinite;display:inline-block;}
-    .section-title{font-size:15px;font-weight:700;}
     .badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;}
     .info-tip{font-size:11px;color:var(--sub);background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.8;}
-
-    /* PWA 安装提示横幅 */
     .install-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:200;background:linear-gradient(135deg,var(--accent),var(--accent2));padding:12px 16px;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,.4);}
     .install-banner.show{display:flex;}
     .install-banner-text{flex:1;font-size:13px;font-weight:600;}
@@ -129,7 +110,6 @@
 </head>
 <body>
 
-<!-- PWA 安装提示横幅（Android Chrome 自动触发） -->
 <div class="install-banner" id="installBanner">
   <div style="font-size:24px;">📱</div>
   <div style="flex:1;">
@@ -140,7 +120,6 @@
   <button class="btn-dismiss" onclick="dismissBanner()">✕</button>
 </div>
 
-<!-- Header -->
 <div class="header" id="mainHeader">
   <div>
     <div class="header-title">🏠 智能环境监控</div>
@@ -315,7 +294,6 @@
       </div>
     </div>
   </div>
-  <!-- 安装引导 -->
   <div class="card" id="installGuide">
     <div class="card-title">📲 添加到手机桌面</div>
     <div id="guideAndroid" style="display:none;font-size:12px;color:var(--sub);line-height:2.2;">
@@ -359,20 +337,16 @@
 //  PWA 安装逻辑
 // ================================================================
 let deferredPrompt = null;
-
-// 检测系统类型，显示对应安装引导
 const ua = navigator.userAgent;
 const isIOS     = /iPhone|iPad|iPod/.test(ua);
 const isAndroid = /Android/.test(ua);
 if (isIOS)     document.getElementById('guideIOS').style.display     = 'block';
 if (isAndroid) document.getElementById('guideAndroid').style.display = 'block';
 
-// Android Chrome 会触发此事件，弹出安装横幅
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   document.getElementById('installBanner').classList.add('show');
-  // header 下移，避免被横幅遮挡
   document.getElementById('mainHeader').style.top = '60px';
 });
 
@@ -390,7 +364,6 @@ function dismissBanner() {
   document.getElementById('mainHeader').style.top = '0';
 }
 
-// 已安装后隐藏引导
 window.addEventListener('appinstalled', () => {
   dismissBanner();
   document.getElementById('installGuide').style.display = 'none';
@@ -415,7 +388,6 @@ window.onload = () => {
   loadConfig();
   initChart();
   addLog('App 启动', 'info');
-  // 注册 Service Worker（PWA 离线支持）
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
       .then(() => console.log('SW registered'))
@@ -453,6 +425,12 @@ function saveConfig() {
   addLog('配置保存，开始轮询', 'ok');
 }
 
+function startPolling() {
+  if (timer) clearInterval(timer);
+  fetchData();
+  timer = setInterval(fetchData, (config.interval || 5) * 1000);
+}
+
 // ================================================================
 //  图表
 // ================================================================
@@ -463,8 +441,8 @@ function initChart() {
     data: {
       labels: chartData.labels,
       datasets: [
-        { label:'温度(°C)', data:chartData.temp, borderColor:'#f97316', backgroundColor:'rgba(249,115,22,.1)', tension:.4, pointRadius:2, borderWidth:2, fill:true },
-        { label:'湿度(%)',  data:chartData.humi, borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,.1)',  tension:.4, pointRadius:2, borderWidth:2, fill:true },
+        { label:'温度(°C)', data:chartData.temp,  borderColor:'#f97316', backgroundColor:'rgba(249,115,22,.1)', tension:.4, pointRadius:2, borderWidth:2, fill:true },
+        { label:'湿度(%)',  data:chartData.humi,  borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,.1)',  tension:.4, pointRadius:2, borderWidth:2, fill:true },
         { label:'烟雾',    data:chartData.smoke, borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,.1)', tension:.4, pointRadius:2, borderWidth:2, fill:true, yAxisID:'y2' }
       ]
     },
@@ -518,28 +496,20 @@ async function fetchData() {
 
 function parseData(json) {
   try {
-    // API 返回的 data 是数组，转换成 {identifier: value} 的对象
     const arr = json.data;
     if (!Array.isArray(arr)) { addLog('数据格式异常', 'err'); return; }
-
     const props = {};
     arr.forEach(item => {
       if (item.identifier && item.value !== undefined) {
         props[item.identifier] = item.value;
       }
     });
-
-    // 调试用，确认解析正确后可删除
-    console.log('解析后属性:', props);
-
     const get = (key) => (props[key] !== undefined ? props[key] : null);
-
     const temp  = parseFloat(get('temp'));
     const humi  = parseFloat(get('humi'));
     const smoke = parseFloat(get('smoke'));
     const fan   = parseInt(get('fan_status'));
     const alarm = parseInt(get('alarm_status'));
-
     if (!isNaN(temp))  updateSensor('temp',  temp);
     if (!isNaN(humi))  updateSensor('humi',  humi);
     if (!isNaN(smoke)) updateSensor('smoke', smoke);
@@ -550,8 +520,7 @@ function parseData(json) {
     }
     if (!isNaN(temp) && !isNaN(humi) && !isNaN(smoke)) {
       pushChart(temp, humi, smoke);
-      document.getElementById('lastUpdate').textContent =
-        '最后更新：' + new Date().toLocaleTimeString();
+      document.getElementById('lastUpdate').textContent = '最后更新：' + new Date().toLocaleTimeString();
     }
   } catch(e) {
     addLog('数据解析错误: ' + e.message, 'err');
@@ -608,10 +577,9 @@ function updateDeviceCard(type, on, isAlarm) {
 }
 
 // ================================================================
-//  阈值下发
-// ================================================================
-// ================================================================
-//  阈值下发（v2 修复：params 使用 {value: num} 嵌套格式）
+//  阈值下发 ✅ 修复版
+//  - params 格式：{ key: num }（直接赋值，无嵌套）
+//  - code=10411 视为"已下发，等待设备回复"，不报错
 // ================================================================
 async function sendThreshold(key, inputId, label) {
   const val = document.getElementById(inputId).value;
@@ -619,7 +587,7 @@ async function sendThreshold(key, inputId, label) {
   const num = parseFloat(val);
   if (isNaN(num)) { showToast('请输入有效数字', 'error'); return; }
 
-  // 更新本地阈值显示
+  // 更新本地阈值
   if (key === 'thr_temp_high')  thresholds.temp  = num;
   if (key === 'thr_humi_high')  thresholds.humi  = num;
   if (key === 'thr_smoke_high') thresholds.smoke = num;
@@ -631,16 +599,11 @@ async function sendThreshold(key, inputId, label) {
   }
 
   try {
-    // ⚠️ 关键修复：params 必须是 { key: { value: num } } 格式
     const body = {
       product_id:  config.productId,
       device_name: config.deviceId,
-      params: {
-        [key]: { value: num }
-      }
+      params: { [key]: num }   // ✅ 正确格式：直接赋值
     };
-
-    console.log('下发请求 body:', JSON.stringify(body));  // 调试用
 
     const res = await fetch(
       'https://iot-api.heclouds.com/thingmodel/set-device-property',
@@ -655,27 +618,34 @@ async function sendThreshold(key, inputId, label) {
     );
 
     const text = await res.text();
-    console.log('下发响应:', res.status, text);  // 调试用
-
     if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + text);
 
     let json;
     try { json = JSON.parse(text); } catch(e) { throw new Error('响应非JSON: ' + text); }
 
-    // OneNET 成功时 code=0
-    if (json.code !== undefined && json.code !== 0) {
+    // ✅ 关键修复：
+    // code=0    → 完全成功（设备已回复确认）
+    // code=10411 → 指令已下发，设备未在超时内回复 set_reply，但数据已送达
+    // 其他 code  → 真正的错误
+    if (json.code === 0) {
+      showToast(label + ' 设置成功：' + num, 'success');
+      addLog(label + ' 下发成功 → ' + num, 'ok');
+    } else if (json.code === 10411) {
+      showToast(label + ' 已下发：' + num + '（等待设备确认）', 'warn');
+      addLog(label + ' 已下发 → ' + num + '（设备响应超时，但指令已送达）', 'warn');
+    } else {
       throw new Error('平台错误 code=' + json.code + ' msg=' + (json.msg || ''));
     }
-
-    showToast(label + ' 已下发：' + num, 'success');
-    addLog(label + ' 下发成功 → ' + num, 'ok');
 
   } catch(e) {
     showToast('发送失败：' + e.message, 'error');
     addLog(label + ' 下发失败: ' + e.message, 'err');
-    console.error('下发异常:', e);
   }
 }
+
+// ================================================================
+//  工具函数
+// ================================================================
 function setOnline(online) {
   const dot=document.getElementById('statusDot'), txt=document.getElementById('onlineText'), badge=document.getElementById('connBadge');
   if (online) { dot.classList.remove('offline'); txt.textContent='在线'; txt.style.color='var(--green)'; badge.textContent='在线'; badge.style.cssText='background:rgba(34,197,94,.15);color:var(--green)'; }
