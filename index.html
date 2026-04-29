@@ -610,43 +610,72 @@ function updateDeviceCard(type, on, isAlarm) {
 // ================================================================
 //  阈值下发
 // ================================================================
+// ================================================================
+//  阈值下发（v2 修复：params 使用 {value: num} 嵌套格式）
+// ================================================================
 async function sendThreshold(key, inputId, label) {
   const val = document.getElementById(inputId).value;
   if (!val) { showToast('请输入阈值', 'error'); return; }
   const num = parseFloat(val);
   if (isNaN(num)) { showToast('请输入有效数字', 'error'); return; }
+
+  // 更新本地阈值显示
   if (key === 'thr_temp_high')  thresholds.temp  = num;
   if (key === 'thr_humi_high')  thresholds.humi  = num;
   if (key === 'thr_smoke_high') thresholds.smoke = num;
+
   addLog('下发 ' + label + '：' + num, 'info');
-  if (!config.apiKey || !config.deviceId || !config.productId) { showToast('请先配置 API 信息', 'error'); return; }
+
+  if (!config.apiKey || !config.deviceId || !config.productId) {
+    showToast('请先配置 API 信息', 'error'); return;
+  }
+
   try {
-    const res = await fetch('https://iot-api.heclouds.com/thingmodel/set-device-property', {
-      method:'POST',
-      headers:{ 'Authorization': config.apiKey, 'Content-Type':'application/json' },
-      body: JSON.stringify({ product_id: config.productId, device_name: config.deviceId, params:{ [key]: num } })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    if (json.code !== undefined && json.code !== 0) throw new Error('code=' + json.code);
+    // ⚠️ 关键修复：params 必须是 { key: { value: num } } 格式
+    const body = {
+      product_id:  config.productId,
+      device_name: config.deviceId,
+      params: {
+        [key]: { value: num }
+      }
+    };
+
+    console.log('下发请求 body:', JSON.stringify(body));  // 调试用
+
+    const res = await fetch(
+      'https://iot-api.heclouds.com/thingmodel/set-device-property',
+      {
+        method:  'POST',
+        headers: {
+          'Authorization': config.apiKey,
+          'Content-Type':  'application/json'
+        },
+        body: JSON.stringify(body)
+      }
+    );
+
+    const text = await res.text();
+    console.log('下发响应:', res.status, text);  // 调试用
+
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + text);
+
+    let json;
+    try { json = JSON.parse(text); } catch(e) { throw new Error('响应非JSON: ' + text); }
+
+    // OneNET 成功时 code=0
+    if (json.code !== undefined && json.code !== 0) {
+      throw new Error('平台错误 code=' + json.code + ' msg=' + (json.msg || ''));
+    }
+
     showToast(label + ' 已下发：' + num, 'success');
     addLog(label + ' 下发成功 → ' + num, 'ok');
+
   } catch(e) {
     showToast('发送失败：' + e.message, 'error');
     addLog(label + ' 下发失败: ' + e.message, 'err');
+    console.error('下发异常:', e);
   }
 }
-
-// ================================================================
-//  轮询 & 工具函数
-// ================================================================
-function startPolling() {
-  if (timer) clearInterval(timer);
-  fetchData();
-  timer = setInterval(fetchData, config.interval * 1000);
-  addLog('开始轮询，间隔 ' + config.interval + 's', 'ok');
-}
-
 function setOnline(online) {
   const dot=document.getElementById('statusDot'), txt=document.getElementById('onlineText'), badge=document.getElementById('connBadge');
   if (online) { dot.classList.remove('offline'); txt.textContent='在线'; txt.style.color='var(--green)'; badge.textContent='在线'; badge.style.cssText='background:rgba(34,197,94,.15);color:var(--green)'; }
